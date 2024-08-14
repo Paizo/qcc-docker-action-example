@@ -1,0 +1,31 @@
+on:
+  push:
+    branches:    
+      - main
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'     
+        required: true
+        default: 'info'
+jobs:
+  build_quake_artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository to the runner
+        uses: actions/checkout@v4
+      - name: Build Quake maps
+        id: Quake build qbsp light vis qcc
+        uses: Paizo/qcc-docker-action@v1
+        with:
+          command: |
+            qbsp -wadpath wads maps/jrbase1.map && light maps/jrbase1.bsp && vis maps/jrbase1.bsp
+            fteqcc64 -srcfile qc/progs.src
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: mymod
+          path: |
+            progs.dat
+            maps/**/*.bsp
+            autoexec.cfg
